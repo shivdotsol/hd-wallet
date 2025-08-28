@@ -9,12 +9,10 @@ import { Keypair } from "@solana/web3.js";
 
 const bip32 = BIP32Factory(ecc);
 
-const mnemonic = localStorage.getItem("mnemonic");
-
 export async function createBtcWallet(
-    walletNumber: number
+    walletNumber: number,
+    mnemonic: string
 ): Promise<WalletType> {
-    if (!mnemonic) throw new Error("No seed phrase");
     if (!bip39.validateMnemonic(mnemonic!!)) {
         throw new Error("Invalid seed phrase");
     }
@@ -24,8 +22,8 @@ export async function createBtcWallet(
     const root = bip32.fromSeed(seed, network);
     const derivationPath = `m/44'/0'/0'/0/${walletNumber}`;
     const child: BIP32Interface = root.derivePath(derivationPath);
-    const privateKey = child.toWIF();
-    const publicKey = child.publicKey.toString();
+    // const privateKey = child.toWIF();
+    // const publicKey = child.publicKey.toString();
     const { address } = bitcoin.payments.p2pkh({
         pubkey: Buffer.from(child.publicKey),
         network,
@@ -41,9 +39,9 @@ export async function createBtcWallet(
 }
 
 export async function createEthWallet(
-    walletNumber: number
+    walletNumber: number,
+    mnemonic: string
 ): Promise<WalletType> {
-    if (!mnemonic) throw new Error("No mnemonic found");
     if (!bip39.validateMnemonic(mnemonic)) {
         throw new Error("Invalid seed phrase");
     }
@@ -58,9 +56,9 @@ export async function createEthWallet(
     } as WalletType;
 }
 export async function createSolWallet(
-    walletNumber: number
+    walletNumber: number,
+    mnemonic: string
 ): Promise<WalletType> {
-    if (!mnemonic) throw new Error("No mnemonic found");
     if (!bip39.validateMnemonic(mnemonic)) {
         throw new Error("Invalid seed phrase");
     }

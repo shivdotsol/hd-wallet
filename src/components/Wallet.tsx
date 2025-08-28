@@ -1,6 +1,10 @@
-import type { WalletType } from "@/App";
-
-function Wallet({ walletNumber, type, address }: WalletType) {
+function Wallet({
+    walletNumber,
+    address,
+}: {
+    walletNumber: number;
+    address: string;
+}) {
     return (
         <div className="mx-2 my-3 px-5 py-3 bg-gray-800/80 border rounded-lg">
             <div>Wallet: {walletNumber}</div>

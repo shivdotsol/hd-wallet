@@ -47,8 +47,22 @@ function App() {
     const [currentCoin, setCurrentCoin] = useState<"BTC" | "ETH" | "SOL">(
         "BTC"
     );
-    const [mnemonic, setMnemonic] = useState<string>();
-    const [hasOnboarded, setHasOnboarded] = useState<boolean>();
+    const [mnemonic, setMnemonic] = useState<string | null>(() => {
+        const mnemonicPhrase = localStorage.getItem("mnemonic");
+        if (mnemonicPhrase) {
+            return mnemonicPhrase;
+        } else {
+            return null;
+        }
+    });
+    const [hasOnboarded, setHasOnboarded] = useState<boolean>(() => {
+        const hasOnbrd = localStorage.getItem("hasOnboarded");
+        if (hasOnbrd) {
+            return JSON.parse(hasOnbrd);
+        } else {
+            return false;
+        }
+    });
     const [isMnemonicGenerated, setIsMnemonicGenerated] = useState<boolean>();
     const [isMnemonicVisible, setIsMnemonicVisible] = useState(true);
 
@@ -66,7 +80,10 @@ function App() {
         // switch case
         switch (currentCoin) {
             case "BTC":
-                const newBtcWallet = await createBtcWallet(walletCount.BTC);
+                const newBtcWallet = await createBtcWallet(
+                    walletCount.BTC,
+                    mnemonic!!
+                );
                 setWalletArray((previous) => [...previous, newBtcWallet]);
                 setWalletCount((previous) => ({
                     ...previous,
@@ -75,7 +92,10 @@ function App() {
                 break;
 
             case "ETH":
-                const newEthWallet = await createEthWallet(walletCount.ETH);
+                const newEthWallet = await createEthWallet(
+                    walletCount.ETH,
+                    mnemonic!!
+                );
                 setWalletArray((previous) => [...previous, newEthWallet]);
                 setWalletCount((previous) => ({
                     ...previous,
@@ -84,7 +104,10 @@ function App() {
                 break;
 
             case "SOL":
-                const newSolWallet = await createSolWallet(walletCount.SOL);
+                const newSolWallet = await createSolWallet(
+                    walletCount.SOL,
+                    mnemonic!!
+                );
                 setWalletArray((previous) => [...previous, newSolWallet]);
                 setWalletCount((previous) => ({
                     ...previous,
@@ -100,16 +123,6 @@ function App() {
         // setWalletArray(...walletArray, newWallet)
     }
 
-    useEffect(() => {
-        const value = localStorage.getItem("hasOnboarded");
-        const mnemonic = localStorage.getItem("mnemonic");
-        if (!value || !mnemonic) {
-            return;
-        }
-        setHasOnboarded(JSON.parse(value));
-        setMnemonic(mnemonic);
-        setIsMnemonicGenerated(true);
-    }, []);
     useEffect(() => {
         localStorage.setItem("savedWallets", JSON.stringify(walletArray));
         localStorage.setItem("walletCount", JSON.stringify(walletCount));
@@ -226,29 +239,30 @@ function App() {
                         </p>
                     </div>
                 )}
-                <div className="max-h-[50vh] scrollbar-none overflow-y-scroll ml-8 mr-3 mt-5 px-10 py-8 rounded-xl bg-gray-900">
-                    <div className="flex justify-between">
-                        <p className="mb-5 text-lg font-semibold">
-                            Your <b>{currentCoin}</b> wallets
-                        </p>
-                        <Button onClick={handleCreateWallet}>
-                            create wallet
-                        </Button>
+                {hasOnboarded && (
+                    <div className="max-h-[50vh] scrollbar-none overflow-y-scroll ml-8 mr-3 mt-5 px-10 py-8 rounded-xl bg-gray-900">
+                        <div className="flex justify-between">
+                            <p className="mb-5 text-lg font-semibold">
+                                Your <b>{currentCoin}</b> wallets
+                            </p>
+                            <Button onClick={handleCreateWallet}>
+                                create wallet
+                            </Button>
+                        </div>
+                        <div>
+                            {walletArray.length > 0 &&
+                                walletArray
+                                    ?.filter((i) => i.type === currentCoin)
+                                    .map((i) => (
+                                        <Wallet
+                                            walletNumber={i.walletNumber}
+                                            address={i.address}
+                                            key={i.address}
+                                        />
+                                    ))}
+                        </div>
                     </div>
-                    <div>
-                        {walletArray.length > 0 &&
-                            walletArray
-                                ?.filter((i) => i.type === currentCoin)
-                                .map((i) => (
-                                    <Wallet
-                                        walletNumber={i.walletNumber}
-                                        type={i.type}
-                                        address={i.address}
-                                        key={i.address}
-                                    />
-                                ))}
-                    </div>
-                </div>
+                )}
             </div>
         </>
     );
