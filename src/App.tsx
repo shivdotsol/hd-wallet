@@ -111,7 +111,6 @@ function App() {
         setIsMnemonicGenerated(true);
     }, []);
     useEffect(() => {
-        console.log(walletArray);
         localStorage.setItem("savedWallets", JSON.stringify(walletArray));
         localStorage.setItem("walletCount", JSON.stringify(walletCount));
     }, [walletArray]);
